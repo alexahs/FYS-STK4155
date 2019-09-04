@@ -20,6 +20,8 @@ class Frankie():
         self.noiseCoeff = noiseCoeff
         self.x, self.y = self.generate()
         self.X = self.create_design_matrix()
+        self.beta, self.z_tilde = self.ordinary_least_squares()
+        self.MSE, self.R2 = self.confidence_metrics()
 
 
     def frankie_function(self, x, y):
@@ -28,7 +30,6 @@ class Frankie():
         term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
         term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
         return term1 + term2 + term3 + term4
-
 
 
     def generate(self):
@@ -41,6 +42,27 @@ class Frankie():
         X = np.column_stack((self.x, self.y))
         poly = PolynomialFeatures(self.degree)
         return poly.fit_transform(X)
+
+
+    def ordinary_least_squares(self):
+        eps = self.noiseCoeff*np.random.randn(self.n)
+        self.z = self.frankie_function(self.x, self.y) + eps
+        reg = skl.LinearRegression().fit(self.X, self.z)
+        beta = reg.coef_
+        z_tilde = reg.predict(self.X)
+        return beta, z_tilde
+
+
+    def confidence_metrics(self):
+        MSE = mean_squared_error(self.z, self.z_tilde)
+        R2 = r2_score(self.z, self.z_tilde)
+        return MSE, R2
+
+
+    def print_params(self):
+        print("Beta: ", self.beta)
+        print("Mean squared error: ", self.MSE)
+        print("R2 score: ", self.R2)
 
 
     def plot_frankie(self):
@@ -59,31 +81,18 @@ class Frankie():
 
 
 
-    def OLS(self):
-        eps = self.noiseCoeff*np.random.randn(self.n)
-        print(eps)
-        self.z = self.frankie_function(self.x, self.y) + eps
-        reg = skl.LinearRegression().fit(self.X, self.z)
-        self.beta = reg.coef_
-        self.z_tilde = reg.predict(self.X)
 
+model = Frankie(100, 5, 0.1)
+model.print_params()
+# print(model.beta)
+# print(model.MSE)
+# print(model.R2)
 
-    def confidence_metrics(self):
-        self.MSE = mean_squared_error(self.z, self.z_tilde)
-        self.R2 = r2_score(self.z, self.z_tilde)
-
-
-
-
-
-
-model = Frankie(10, 5, 0.1)
-
-model.OLS()
-model.confidence_metrics()
-print(model.beta)
-print(model.MSE)
-print(model.R2)
+# model.OLS()
+# model.confidence_metrics()
+# print(model.beta)
+# print(model.MSE)
+# print(model.R2)
 # model.plot_frankie()
 
 
