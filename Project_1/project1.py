@@ -14,7 +14,7 @@ from sklearn.linear_model import LinearRegression
 n = 100
 degree = 5
 
-def frankie_function(x, y, eps = 0):
+def frankie_function(x, y, eps = 0.05):
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
@@ -69,31 +69,16 @@ def k_fold(X, z, k = 5):
 
     i = 0
     for train_inds, test_inds in kfold.split(X):
-        # print(np.shape(X))
+
+
         X_train = X[train_inds]
         X_test = X[test_inds]
-        # X_test = X_train
-
-        # print("\n i=", i)
-        # print("TRAIN: ", train_inds)
-        # print("TEST: ", test_inds)
 
         z_train = z[train_inds]
         z_test = z[test_inds]
-        # z_test = z_train
-
 
         beta = OLS(X_train, z_train)
-        # linreg = LinearRegression().fit(X_train, z_train)
-
-        # z_test_predict = linreg.predict(X_test)
-
-
-
         z_test_predict = X_test @ beta
-
-        # print(np.max(X_train), np.min(X_train))
-
 
         MSE_scores[i] = mean_squared_error(z_test_predict, z_test)
         R2_scores[i] = r2_score(z_test_predict, z_test)
@@ -114,25 +99,21 @@ z = frankie_function(x, y)
 
 
 
-# print(x)
-
 z_flat = np.ravel(z)
 X = create_design_matrix(x, y, degree)
 
 
 KF = k_fold(X, z_flat)
 
+print("k-fold CV model performance")
 print("R2 scores:  ", KF[0])
 print("MSE scores: ", KF[1])
 
 # X_train, X_test, z_train, z_test = train_test_split(X, z_flat, test_size=0.2)
-
-
+#
 # beta = OLS(X_train, z_train)
-
-
-
-
+#
+#
 # z_train_predict = X_train @ beta
 # print("Model performance for training set")
 # print("MSE:     ", mean_squared_error(z_train_predict, z_train))
