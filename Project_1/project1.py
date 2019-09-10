@@ -6,13 +6,15 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import sklearn.linear_model as skl
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
+
+from sklearn.linear_model import LinearRegression
 
 
-n = 20
+n = 100
 degree = 5
 
-def frankie_function(x, y, eps = 0.05):
+def frankie_function(x, y, eps = 0):
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
@@ -23,8 +25,10 @@ def frankie_function(x, y, eps = 0.05):
 
 
 def generate_xy(n, start = 0, stop = 1):
-    x = np.linspace(start, stop, n)
-    y = np.linspace(start, stop, n)
+    # x = np.linspace(start, stop, n)
+    # y = np.linspace(start, stop, n)
+    x = np.random.rand(n)
+    y = np.random.rand(n)
     return x, y
 
 
@@ -56,6 +60,53 @@ def OLS(X, z):
 
 
 
+
+def k_fold(X, z, k = 5):
+    R2_scores = np.zeros(k)
+    MSE_scores = np.zeros(k)
+
+    kfold = KFold(n_splits = k)
+
+    i = 0
+    for train_inds, test_inds in kfold.split(X):
+        # print(np.shape(X))
+        X_train = X[train_inds]
+        X_test = X[test_inds]
+        # X_test = X_train
+
+        # print("\n i=", i)
+        # print("TRAIN: ", train_inds)
+        # print("TEST: ", test_inds)
+
+        z_train = z[train_inds]
+        z_test = z[test_inds]
+        # z_test = z_train
+
+
+        beta = OLS(X_train, z_train)
+        # linreg = LinearRegression().fit(X_train, z_train)
+
+        # z_test_predict = linreg.predict(X_test)
+
+
+
+        z_test_predict = X_test @ beta
+
+        # print(np.max(X_train), np.min(X_train))
+
+
+        MSE_scores[i] = mean_squared_error(z_test_predict, z_test)
+        R2_scores[i] = r2_score(z_test_predict, z_test)
+
+        i += 1
+
+
+    return R2_scores, MSE_scores
+
+
+
+
+
 x, y = generate_xy(n)
 x, y = np.meshgrid(x, y)
 
@@ -69,19 +120,26 @@ z_flat = np.ravel(z)
 X = create_design_matrix(x, y, degree)
 
 
-# X_train, X_test, Y_train, Y_test = ...
+KF = k_fold(X, z_flat)
+
+print("R2 scores:  ", KF[0])
+print("MSE scores: ", KF[1])
+
+# X_train, X_test, z_train, z_test = train_test_split(X, z_flat, test_size=0.2)
 
 
-beta = OLS(X, z_flat)
+# beta = OLS(X_train, z_train)
 
 
 
-z_tilde = X @ beta
 
-
-
-MSE = mean_squared_error(z_flat, z_tilde)
-R2 = r2_score(z_flat, z_tilde)
-# print(np.sqrt((z - z)**2))
-print(MSE)
-print(R2)
+# z_train_predict = X_train @ beta
+# print("Model performance for training set")
+# print("MSE:     ", mean_squared_error(z_train_predict, z_train))
+# print("R2 score:", r2_score(z_train_predict, z_train), "\n")
+#
+#
+# z_test_predict = X_test @ beta
+# print("Model performance for test set")
+# print("MSE:     ", mean_squared_error(z_test_predict, z_test))
+# print("R2 score:", r2_score(z_test_predict, z_test), "\n")
