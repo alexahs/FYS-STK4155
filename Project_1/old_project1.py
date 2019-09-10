@@ -41,16 +41,17 @@ class Frankie():
     def create_design_matrix(self):
         X = np.column_stack((self.x, self.y))
         poly = PolynomialFeatures(self.degree)
+        # X_skl = X[:,1:]
         print(poly.fit_transform(X))
         return poly.fit_transform(X)
 
     def ordinary_least_squares(self):
         eps = self.noiseCoeff*np.random.randn(self.n)
         self.z = self.frankie_function(self.x, self.y) + eps
-        S, V, D = np.linalg.svd(self.X)
+        U, S, VT = np.linalg.svd(self.X)
         print(U)
         print(S)
-        print(V)
+        print(VT)
 #    def ordinary_least_squares(self):
 #        eps = self.noiseCoeff*np.random.randn(self.n)
 #        self.z = self.frankie_function(self.x, self.y) + eps
