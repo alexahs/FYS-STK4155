@@ -7,8 +7,8 @@ import sklearn.linear_model as skl
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import train_test_split, KFold
-
 from sklearn.linear_model import LinearRegression
+
 
 
 n = 100
@@ -92,11 +92,12 @@ def k_fold(X, z, k = 5):
 x, y = generate_xy(n)
 x, y = np.meshgrid(x, y)
 
+
 z = frankie_function(x, y)
 
-
-
 z_flat = np.ravel(z)
+
+
 X = create_design_matrix(x, y, degree)
 
 
