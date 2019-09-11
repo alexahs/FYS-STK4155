@@ -12,13 +12,9 @@ from sklearn.linear_model import LinearRegression
 
 
 class RegressionMethods:
-
-
-
     def __init__(self, X, z):
         self.X = X
         self.z = z
-
 
 
     def ols(self):
@@ -32,28 +28,26 @@ class RegressionMethods:
         XT = self.X.T
         p = np.shape(self.X)[1]
         L = np.identity(p)*lambda_
-        self.beta = np.pinv(XT.dot(self.X) + L).dot(XT).dot(self.z)
+        self.beta = np.linalg.pinv(XT.dot(self.X) + L).dot(XT).dot(self.z)
 
         return self.beta
 
 
     def lasso(self, lambda_):
-        model = slk.Lasso(alpha = lambda_)
-        model.fit(self.X, self.z)
+        clf = skl.Lasso(alpha = lambda_)
+        clf.fit(self.X, self.z)
+        self.beta = clf.coef_
 
-        return model.coef_
+        return self.beta
 
 
-    def solve(self, method, lambda_ = 0.1):
+    def call_solver(self, method = 'ols', lambda_ = 0.1):
         if method == 'ols':
             return self.ols()
         elif method == 'ridge':
             return self.ridge(lambda_)
         elif method == 'lasso':
             return self.lasso(lambda_)
-        else:
-            print("Wrong usage. Prediction method must be specified as 'ols', 'ridge' or 'lasso'.")
-            exit(1)
 
         return None
 

@@ -38,6 +38,24 @@ def create_design_matrix(x, y, deg):
     return X
 
 
+
+def plot_mesh(x, y, z, n):
+    z = np.reshape(z, (n, n))
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
+                           linewidth=0, antialiased=False)
+
+    ax.set_zlim(-0.10, 1.40)
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    plt.show()
+
+
 def main():
     n = 100
     deg = 5
@@ -46,16 +64,18 @@ def main():
     z_flat = np.ravel(z)
     X = create_design_matrix(x, y, deg)
 
-    # print(np.shape(X))
-    # print(np.shape(z))
 
     model = RegressionMethods(X, z_flat)
-    beta = model.solve('ols')
+    beta = model.call_solver('ridge')
+
+    print(beta)
 
     z_tilde = X @ beta
 
-    z_mesh = np.reshape(z_tilde, (n, n))
-    print(np.shape(z_mesh))
+
+    # plot_mesh(x, y, z_tilde, n)
+
+
 
     return None
 
