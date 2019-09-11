@@ -40,6 +40,11 @@
 # Misc. files
 *.pro
 *.pro.user
+*.swp
+
+# Folders
+old*
+__pycache__
 
 # Images
 *.png
