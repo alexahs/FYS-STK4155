@@ -89,9 +89,6 @@ def k_fold(X, z, k = 5):
     return R2_scores, MSE_scores
 
 
-
-
-
 x, y = generate_xy(n)
 x, y = np.meshgrid(x, y)
 
