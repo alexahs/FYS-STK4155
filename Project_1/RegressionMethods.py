@@ -1,12 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import sklearn.linear_model as skl
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.model_selection import train_test_split, KFold
+# from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
 
@@ -20,7 +14,6 @@ class RegressionMethods:
     def ols(self):
         XT = self.X.T
         self.beta = np.linalg.pinv(XT.dot(self.X)).dot(XT).dot(self.z)
-
         return self.beta
 
 
@@ -34,8 +27,7 @@ class RegressionMethods:
 
 
     def lasso(self, lambda_):
-        clf = skl.Lasso(alpha = lambda_)
-        clf.fit(self.X, self.z)
+        clf = skl.Lasso(alpha = lambda_).fit(self.X, self.z)
         self.beta = clf.coef_
 
         return self.beta
@@ -50,7 +42,6 @@ class RegressionMethods:
             return self.lasso(lambda_)
 
         return None
-
 
 
 if __name__ == '__main__':
