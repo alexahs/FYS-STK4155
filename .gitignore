@@ -45,7 +45,7 @@
 # Folders
 old*
 __pycache__
-*homework
+homework
 
 # Images
 *.png
