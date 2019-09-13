@@ -11,7 +11,7 @@ class RegressionMethods:
         self.z = z
 
 
-    def ols(self):
+    def ols(self, lambda_):
         XT = self.X.T
         self.beta = np.linalg.pinv(XT.dot(self.X)).dot(XT).dot(self.z)
         return self.beta

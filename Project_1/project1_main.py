@@ -94,6 +94,7 @@ def k_fold(X, z, solver_name, lambda_, k=5):
 
 def main():
     n = 3600
+
     # deg = 5
     sigma = 0.05
     x, y = generate_mesh(n)
@@ -102,13 +103,16 @@ def main():
 
     complexity = np.linspace(1, 6, 6)
 
+
     n_lambdas = 10
     lambdas = np.logspace(-3, 2, n_lambdas)
 
 
     error_scores = pd.DataFrame(columns=['degree', 'lambda', 'MSE', 'R2'])
 
+
     for lmb in lambdas:
+
         for deg in complexity:
             print(deg)
             X = create_design_matrix(x, y, int(deg))
