@@ -96,7 +96,11 @@ def k_fold(X, z, method_name, lambda_ = 0, k=5, normalize = True):
 
         model = RegressionMethods(method_name)
         model.fit(X_train, z_train)
-        z_test_predict = model.predict(X_test) + z_train_mean
+
+        if normalize:
+            z_test_predict = model.predict(X_test) + z_train_mean
+        else:
+            z_test_predict = model.predict(X_test)
 
 
 
