@@ -18,6 +18,7 @@ class RegressionMethods:
 
 
     def ridge(self, lambda_):
+
         XT = self.X.T
         p = np.shape(self.X)[1]
         L = np.identity(p)*lambda_
@@ -27,7 +28,7 @@ class RegressionMethods:
 
 
     def lasso(self, lambda_):
-        clf = skl.Lasso(alpha = lambda_).fit(self.X, self.z)
+        clf = skl.Lasso(alpha = lambda_, fit_intercept=True, normalize=True).fit(self.X, self.z)
         self.beta = clf.coef_
 
         return self.beta
@@ -35,7 +36,7 @@ class RegressionMethods:
 
     def call_solver(self, method = 'ols', lambda_ = 0.1):
         if method == 'ols':
-            return self.ols()
+            return self.ols(lambda_)
         elif method == 'ridge':
             return self.ridge(lambda_)
         elif method == 'lasso':
@@ -45,5 +46,4 @@ class RegressionMethods:
 
 
 if __name__ == '__main__':
-    # model = RegressionMethods()
     print("hello world")

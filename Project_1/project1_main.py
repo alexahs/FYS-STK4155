@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split, KFold
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 
 
 def frankie_function(x, y, n, sigma = 0, mu = 0):
@@ -63,20 +63,32 @@ def plot_mesh(x, y, z, n):
     plt.show()
 
 
-def k_fold(X, z, solver_name, lambda_, k=5):
+
+def k_fold(X, z, solver_name, lambda_ = 0, k=5, normalize = True):
     R2_scores = np.zeros(k)
     MSE_scores = np.zeros(k)
     kfold = KFold(n_splits = k, shuffle=True)
 
+
     i = 0
 
     for train_inds, test_inds in kfold.split(X):
+
+
 
         X_train = X[train_inds]
         X_test = X[test_inds]
 
         z_train = z[train_inds]
         z_test = z[test_inds]
+
+
+        # if normalize:
+        #     X_train_mean = np.mean(X_train, axis=0)
+        #
+
+        #normalisere test data med variansen til treningsdata (og gjennomsnitt)
+        #
 
         model = RegressionMethods(X_train, z_train)
 
@@ -92,41 +104,79 @@ def k_fold(X, z, solver_name, lambda_, k=5):
     return np.mean(R2_scores), np.mean(MSE_scores)
 
 
-def main():
-    n = 3600
+def get_ridge_confidence_metrics(X, z, lambda_start = -3, lambda_stop = 3, n_lambdas = 100, k = 5):
 
-    # deg = 5
+    R2_scores = np.zeros(n_lambdas)
+    MSE_scores = np.zeros(n_lambdas)
+    lambdas = np.logspace(lambda_start, lambda_stop, n_lambdas)
+
+
+    for lamb, i in zip(lambdas, range(len(lambdas))):
+        vals = k_fold(X, z, 'ridge', lambda_ = lamb)
+        R2_scores[i], MSE_scores[i] = vals
+
+
+    return R2_scores, MSE_scores, lambdas
+
+
+# def get_ols_confidence_metrics(X, z, k = 5):
+#     complexity = np.linspace(1, 6, 6)
+
+def main():
+
+    np.random.seed(100)
+
+    n = 100
+
+    deg = 5
     sigma = 0.05
     x, y = generate_mesh(n)
     z = frankie_function(x, y, n, sigma)
     z_flat = np.ravel(z)
 
-    complexity = np.linspace(1, 6, 6)
+    # complexity = np.linspace(1, 6, 6)
 
 
-    n_lambdas = 10
-    lambdas = np.logspace(-3, 2, n_lambdas)
 
 
-    error_scores = pd.DataFrame(columns=['degree', 'lambda', 'MSE', 'R2'])
+    X = create_design_matrix(x, y, deg)
+    model = RegressionMethods(X, z_flat)
+    beta = model.call_solver('lasso', 0.0001)
+
+    # print(beta)
+
+    # _, MSEs, lambdas = get_ridge_confidence_metrics(X, z_flat)
+
+    # n_lambdas = 10
+    # lambdas = np.logspace(-3, 2, n_lambdas)
 
 
-    for lmb in lambdas:
 
-        for deg in complexity:
-            print(deg)
-            X = create_design_matrix(x, y, int(deg))
+    # plt.plot(lambdas, MSEs)
+    # plt.xlabel("lambda")
+    # plt.ylabel("MSE")
+    # plt.show()
 
-            R2, MSE = k_fold(X, z_flat, 'ridge', lmb)
 
-            error_scores = error_scores.append({'degree': int(deg), 'lambda': lmb, 'MSE': MSE, 'R2': R2}, ignore_index=True)
-        print(lmb)
+    # error_scores = pd.DataFrame(columns=['degree', 'lambda', 'MSE', 'R2'])
+
+
+    # for lmb in lambdas:
+    #
+    #     for deg in complexity:
+    #         print(deg)
+    #         X = create_design_matrix(x, y, int(deg))
+    #
+    #         R2, MSE = k_fold(X, z_flat, 'ridge', lmb)
+    #
+    #         error_scores = error_scores.append({'degree': int(deg), 'lambda': lmb, 'MSE': MSE, 'R2': R2}, ignore_index=True)
+    #     print(lmb)
 
 
     # error_scores.to_csv('k_fold_error_metrics.csv')
 
 
 
-    return None
 
-main()
+if __name__ == '__main__':
+    main()
