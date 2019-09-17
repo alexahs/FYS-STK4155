@@ -64,7 +64,7 @@ def plot_mesh(x, y, z, n):
 
 
 
-def k_fold(X, z, solver_name, lambda_ = 0, k=5, normalize = True):
+def k_fold(X, z, method_name, lambda_ = 0, k=5, normalize = True):
     R2_scores = np.zeros(k)
     MSE_scores = np.zeros(k)
     bias = np.zeros(k)
@@ -94,10 +94,9 @@ def k_fold(X, z, solver_name, lambda_ = 0, k=5, normalize = True):
             z_train -= z_train_mean
 
 
-        model = RegressionMethods(X_train, z_train)
-
-        beta = model.call_solver(solver_name, lambda_)
-        z_test_predict = X_test @ beta + z_train_mean
+        model = RegressionMethods(method_name)
+        model.fit(X_train, z_train)
+        z_test_predict = model.predict(X_test) + z_train_mean
 
 
 

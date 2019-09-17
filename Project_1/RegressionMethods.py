@@ -5,44 +5,70 @@ import sklearn.linear_model as skl
 
 
 class RegressionMethods:
-    def __init__(self, X, z):
-        self.X = X
-        self.z = z
+    def __init__(self, method = 'ols', alpha = 0):
+        self.method = method
+        self.alpha = alpha
 
 
-    def ols(self, lambda_):
+
+    def ols(self):
         XT = self.X.T
         self.beta = np.linalg.pinv(XT.dot(self.X)).dot(XT).dot(self.z)
-        return self.beta
 
 
-    def ridge(self, lambda_):
 
-        # X = X[:, 1:]
+    def ridge(self):
+
+        # self.X -= np.mean(self.X, axis = 0)
+        # self.z -= np.mean(self.z)
+        #
+        # col_var = np.var(self.X, axis = 0)
+        #
+        # for i in range(1, len(self.X[0,:])):
+        #     self.X[i,:] /= col_var[i]
+
         XT = self.X.T
         p = np.shape(self.X)[1]
-        L = np.identity(p)*lambda_
+        L = np.identity(p)*self.alpha
+
         self.beta = np.linalg.pinv(XT.dot(self.X) + L).dot(XT).dot(self.z)
 
-        return self.beta
 
-
-    def lasso(self, lambda_):
-        clf = skl.Lasso(alpha = lambda_, fit_intercept=True, normalize=True).fit(self.X, self.z)
+    def lasso(self):
+        clf = skl.Lasso(alpha = alpha, fit_intercept=True, normalize=True).fit(self.X, self.z)
         self.beta = clf.coef_
 
-        return self.beta
+
+    def fit(self, X, z):
+
+        self.X = X
+
+        if len(np.shape(z)) > 1:
+            self.z = np.ravel(z)
+        else:
+            self.z = z
 
 
-    def call_solver(self, method = 'ols', lambda_ = 0.1):
-        if method == 'ols':
-            return self.ols(lambda_)
-        elif method == 'ridge':
-            return self.ridge(lambda_)
-        elif method == 'lasso':
-            return self.lasso(lambda_)
+        if self.method == 'ols':
+            self.ols()
+        elif self.method == 'ridge':
+            self.ridge()
+        elif self.method == 'lasso':
+            self.lasso()
 
-        return None
+
+    def predict(self, X):
+        self.z_tilde = X @ self.beta
+
+
+        return self.z_tilde
+
+        # if self.method == 'ridge':
+        #     return self.z_tilde + np.mean(self.z_tilde)
+        # else:
+        #     return self.z_tilde
+
+
 
 
 if __name__ == '__main__':

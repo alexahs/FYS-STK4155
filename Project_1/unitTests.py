@@ -19,39 +19,35 @@ class UnitTests():
     def test_ols(self):
 
         clf = skl.LinearRegression().fit(self.X, self.z_flat)
-        z_tilde_skl = clf.predict(self.X)
+        z_pred_skl = clf.predict(self.X)
 
-        model = RegressionMethods(self.X, self.z_flat)
-        beta = model.call_solver('ols', 0)
-        z_tilde = self.X @ beta
+        model = RegressionMethods('ols')
+        model.fit(self.X, self.z_flat)
+        z_pred_model = model.predict(self.X)
 
-
-
-        diff = mean_squared_error(z_tilde, z_tilde_skl)
+        diff = mean_squared_error(z_pred_skl, z_pred_model)
 
         assert diff < self.tol
 
 
     def test_ridge(self):
 
-        self.X -= np.mean(self.X, axis=0)
-        print(np.shape(np.mean(self.X, axis=0)))
-        self.z_flat -= np.mean(self.z_flat)
+        alpha = 0.01
+
+        clf = skl.Ridge(alpha = alpha).fit(self.X, self.z_flat)
+        z_pred_skl = clf.predict(self.X)
 
 
+        model = RegressionMethods(method = 'ridge', alpha = alpha)
+        model.fit(self.X, self.z_flat)
+        z_pred_model = model.predict(self.X)
 
-        clf = skl.Ridge(alpha = 0.1).fit(self.X, self.z_flat)
-        z_tilde_skl = clf.predict(self.X)
 
+        # print(z_pred_model)
+        # print(z_pred_skl)
 
-        model = RegressionMethods(self.X, self.z_flat)
-        beta = model.call_solver('ridge', 0.1)
-        z_tilde = self.X @ beta
+        diff = mean_squared_error(z_pred_skl, z_pred_model)
 
-        diff = mean_squared_error(z_tilde, z_tilde_skl)
-
-        print(z_tilde)
-        print(z_tilde_skl)
         assert diff < self.tol
 
 
