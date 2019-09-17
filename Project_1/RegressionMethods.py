@@ -1,7 +1,6 @@
 import numpy as np
 import sklearn.linear_model as skl
 # from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
 
 
 
@@ -19,6 +18,7 @@ class RegressionMethods:
 
     def ridge(self, lambda_):
 
+        # X = X[:, 1:]
         XT = self.X.T
         p = np.shape(self.X)[1]
         L = np.identity(p)*lambda_
