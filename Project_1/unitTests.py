@@ -21,22 +21,21 @@ class UnitTests():
         clf = skl.LinearRegression().fit(self.X, self.z_flat)
         z_pred_skl = clf.predict(self.X)
 
+
         model = RegressionMethods('ols')
         model.fit(self.X, self.z_flat)
         z_pred_model = model.predict(self.X)
 
         diff = mean_squared_error(z_pred_skl, z_pred_model)
-
         assert diff < self.tol
 
 
     def test_ridge(self):
 
-        alpha = 0.01
+        alpha = 0.1
 
-        clf = skl.Ridge(alpha = alpha).fit(self.X, self.z_flat)
+        clf = skl.Ridge(alpha = alpha, fit_intercept=False).fit(self.X, self.z_flat)
         z_pred_skl = clf.predict(self.X)
-
 
         model = RegressionMethods(method = 'ridge', alpha = alpha)
         model.fit(self.X, self.z_flat)
@@ -47,7 +46,6 @@ class UnitTests():
         # print(z_pred_skl)
 
         diff = mean_squared_error(z_pred_skl, z_pred_model)
-
         assert diff < self.tol
 
 

@@ -10,22 +10,17 @@ class RegressionMethods:
         self.alpha = alpha
 
 
-
     def ols(self):
         XT = self.X.T
         self.beta = np.linalg.pinv(XT.dot(self.X)).dot(XT).dot(self.z)
 
 
-
     def ridge(self):
 
-        # self.X -= np.mean(self.X, axis = 0)
-        # self.z -= np.mean(self.z)
-        #
-        # col_var = np.var(self.X, axis = 0)
-        #
-        # for i in range(1, len(self.X[0,:])):
-        #     self.X[i,:] /= col_var[i]
+        # self.mean_X = np.mean(self.X, axis=0)
+        # self.mean_z = np.mean(self.z)
+        # self.X -= self.mean_X
+        # self.z -= self.mean_z
 
         XT = self.X.T
         p = np.shape(self.X)[1]
@@ -35,19 +30,14 @@ class RegressionMethods:
 
 
     def lasso(self):
-        clf = skl.Lasso(alpha = alpha, fit_intercept=True, normalize=True).fit(self.X, self.z)
+        clf = skl.Lasso(alpha = self.alpha, fit_intercept=False, normalize=False).fit(self.X, self.z)
         self.beta = clf.coef_
 
 
     def fit(self, X, z):
 
         self.X = X
-
-        if len(np.shape(z)) > 1:
-            self.z = np.ravel(z)
-        else:
-            self.z = z
-
+        self.z = z
 
         if self.method == 'ols':
             self.ols()
@@ -60,13 +50,9 @@ class RegressionMethods:
     def predict(self, X):
         self.z_tilde = X @ self.beta
 
-
         return self.z_tilde
 
-        # if self.method == 'ridge':
-        #     return self.z_tilde + np.mean(self.z_tilde)
-        # else:
-        #     return self.z_tilde
+
 
 
 
