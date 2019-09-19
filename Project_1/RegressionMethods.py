@@ -53,8 +53,8 @@ class RegressionMethods:
         return self.z_tilde
 
 
-
-
+    def set_alpha(self, alpha):
+        self.alpha = alpha
 
 
 if __name__ == '__main__':

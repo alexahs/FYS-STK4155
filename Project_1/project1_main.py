@@ -8,6 +8,8 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split, KFold, cross_validate
 from sklearn.linear_model import LinearRegression, Ridge
+import matplotlib.colors as colors
+from imageio import imread
 
 
 def frankie_function(x, y, n, sigma = 0, mu = 0):
@@ -63,23 +65,101 @@ def plot_mesh(x, y, z, n):
     plt.show()
 
 
-# def find_optimal_model_params(x, y, z, regression_method = 'ols', k = 5, max_deg=10):
-#
-#
-#     n_lambdas = 10
-#     lambdas = np.logspace(-3, 1, n_lambdas)
+
+def plot_param_heatmap(filename_csv, filename_npy):
+
+
+    # data = pd.read_csv(data_filename)
+    csv_data = pd.read_csv(filename_csv)
+    npy_data = np.load(filename_npy)
+
+    lambdas = csv_data['lambda'].unique()
+    degrees = csv_data['degree'].unique()
 
 
 
+    # print(data)
+
+    im = plt.imshow(npy_data, cmap='PuBu_r', interpolation='nearest', norm=colors.LogNorm(vmin=npy_data.min(), vmax=npy_data.max()))
+    plt.colorbar(im)
+    plt.xlabel("degree")
+    plt.ylabel("lambda")
+    plt.show()
+
+
+def analyze_model_params(x, y, z, model, k = 5, max_deg=10):
 
 
 
+    degrees = np.linspace(1, max_deg, max_deg)
+
+
+    if model.method == 'ols':
+        lambdas = [0]
+    else:
+        n_lambdas = 20
+        lambdas = np.logspace(-3, 3, n_lambdas)
+
+    filename = 'errorScores_' + model.method
+
+    error_scores = pd.DataFrame(columns=['degree', 'lambda', 'mse', 'bias', 'variance'])
+
+    if model.method != 'ols':
+        mse_grid = np.zeros((len(degrees), n_lambdas))
+
+    i = 0
+
+    for deg in degrees:
+        j = 0
+        X = create_design_matrix(x, y, int(deg))
+        print(deg)
+        resample = Resampling(X, z)
+        for lamb in lambdas:
+            # print(lamb)
+            model.set_alpha(lamb)
+
+            error, bias, variance, r2 = resample.k_fold_CV(model)
+
+
+
+            if model.method != 'ols':
+                mse_grid[i, j] = error
+
+            j+=1
+
+            error_scores = error_scores.append({'degree': deg,
+                                                'lambda': lamb,
+                                                'mse': error,
+                                                'bias': bias,
+                                                'variance': variance,
+                                                'r2': r2}, ignore_index=True)
+
+
+        i+=1
+
+
+
+    error_scores.to_csv(filename + '.csv')
+    if model.method != 'ols':
+        np.save("mse_" + model.method, mse_grid)
+    print(mse_grid)
+
+
+def show_terrain():
+    terrain1 = imread('terrain2.tif')
+    # Show the terrain
+    plt.figure()
+    plt.title('Terrain')
+    plt.imshow(terrain1, cmap='gray')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.show()
 
 
 def main():
 
     np.random.seed(100)
-    n = 100
+    n = 20
     deg = 5
     sigma = 0.05
     x, y = generate_mesh(n)
@@ -87,15 +167,21 @@ def main():
     z_flat = np.ravel(z)
     X = create_design_matrix(x, y, deg)
 
-    model = RegressionMethods('ols')
-    resample = Resampling(X, z_flat)
-    mse, bias, variance = resample.k_fold_CV(model)
+    model = RegressionMethods('ridge')
 
 
-    print('Error:', mse)
-    print('Bias^2:', bias)
-    print('Var:', variance)
-    print('{} >= {} + {} = {}'.format(mse, bias, variance, bias+variance))
+    # analyze_model_params(x, y, z_flat, model)
+    # plot_param_heatmap('errorScores_ridge.csv', 'mse_ridge.npy')
+
+    show_terrain()
+    # resample = Resampling(X, z_flat)
+    # mse, bias, variance = resample.k_fold_CV(model)
+    #
+    #
+    # print('Error:', mse)
+    # print('Bias^2:', bias)
+    # print('Var:', variance)
+    # print('{} >= {} + {} = {}'.format(mse, bias, variance, bias+variance))
 
 
 

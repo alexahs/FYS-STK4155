@@ -11,8 +11,19 @@ class Resampling:
         self.z = z
 
 
-    # def train_test(self, test_size = 0.2):
-    #     X_train, X_test, z_train, z_test = train_test_split(self.X, self.z, test_size = test_size)
+    def train_test(self, model, test_size = 0.2):
+
+        X_train, X_test, z_train, z_test = train_test_split(self.X, self.z, test_size = test_size)
+
+        model.fit(X_train, z_train)
+        z_pred = model.predict(X_test)
+
+        error = np.mean((z_test - z_pred)**2)
+        bias = np.mean((z_test - np.mean(z_pred))**2)
+        variance = np.var(z_test - z_pred)
+        r2 = r2_score(z_test, z_pred)
+
+        return error, bias, variance, r2
 
 
     def k_fold_CV(self, model, k = 5, center = False):
@@ -22,6 +33,7 @@ class Resampling:
         error = np.zeros(k)
         bias = np.zeros(k)
         variance = np.zeros(k)
+        r2 = np.zeros(k)
 
 
         i = 0
@@ -49,9 +61,10 @@ class Resampling:
             error[i] = np.mean((z_test - z_pred)**2)
             bias[i] = np.mean((z_test - np.mean(z_pred))**2)
             variance[i] = np.var(z_test - z_pred)
+            r2[i] = r2_score(z_test, z_pred)
             i += 1
 
-        return np.mean(error), np.mean(bias), np.mean(variance)
+        return np.mean(error), np.mean(bias), np.mean(variance), np.mean(r2)
 
 
 # if __name__ == '__main__':
