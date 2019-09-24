@@ -20,7 +20,7 @@ class Resampling:
 
         error = np.mean((z_test - z_pred)**2)
         bias = np.mean((z_test - np.mean(z_pred))**2)
-        variance = np.var(z_test - z_pred)
+        variance = np.var(z_pred)
         r2 = r2_score(z_test, z_pred)
 
         return error, bias, variance, r2
@@ -34,6 +34,7 @@ class Resampling:
         bias = np.zeros(k)
         variance = np.zeros(k)
         r2 = np.zeros(k)
+        train_error = np.zeros(k)
 
 
         i = 0
@@ -53,6 +54,7 @@ class Resampling:
             model.fit(X_train, z_train)
 
             z_pred = model.predict(X_test)
+            z_pred_train = model.predict(X_train)
 
             if center:
                 z_pred += z_train_mean
@@ -60,11 +62,13 @@ class Resampling:
 
             error[i] = np.mean((z_test - z_pred)**2)
             bias[i] = np.mean((z_test - np.mean(z_pred))**2)
-            variance[i] = np.var(z_test - z_pred)
+            variance[i] = np.var(z_pred)
             r2[i] = r2_score(z_test, z_pred)
+            train_error[i] = mean_squared_error(z_pred_train, z_train)
             i += 1
 
-        return np.mean(error), np.mean(bias), np.mean(variance), np.mean(r2)
+
+        return np.mean(error), np.mean(bias), np.mean(variance), np.mean(r2), np.mean(train_error)
 
 
 # if __name__ == '__main__':

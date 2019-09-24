@@ -49,8 +49,26 @@ class UnitTests():
         assert diff < self.tol
 
 
+    def test_kfold(self, k=5):
+        kfold = KFold(n_splits = k, shuffle=True)
+        skl_model = LinearRegression()
+        skl_mse_folds = cross_val_score(skl_model, self.X, self.z_flat, scoring='neg_mean_squared_error', cv=kfold)
+        mean_skl_mse_folds = -np.mean(skl_mse_folds)
+
+
+        model = RegressionMethods('ols')
+        resample = Resampling(self.X, self.z_flat)
+        mse = resample.k_fold_CV(model)[0]
+
+        tol = 1e-3
+        diff = abs(mse - mean_skl_mse_folds)
+        assert diff < tol
+
+
+
 if __name__ == '__main__':
     tests = UnitTests()
     tests.test_ols()
     tests.test_ridge()
+    tests.test_kfold()
     print("All tests passed")
