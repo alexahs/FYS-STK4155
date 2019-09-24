@@ -44,12 +44,21 @@ class Resampling:
             z_train = self.z[train_inds]
             z_test = self.z[test_inds]
 
+
             if center:
+                X_train = X_train[1:]
                 X_train_mean = np.mean(X_train, axis=0)
                 z_train_mean = np.mean(z_train)
+                X_train_std = np.sqrt(np.var(X_train, axis=0))
+                z_train_std = np.sqrt(np.var(z_train))
+
                 X_train -= X_train_mean
                 X_test -= X_train_mean
                 z_train -= z_train_mean
+
+                X_train /= X_train_std
+                X_test /= X_test_std
+                z_train /= z_train_std
 
             model.fit(X_train, z_train)
 
@@ -57,7 +66,12 @@ class Resampling:
             z_pred_train = model.predict(X_train)
 
             if center:
+                z_pred *= z_train_std
                 z_pred += z_train_mean
+                z_pred_train *= z_train_std
+                z_pred_train += z_train_mean
+
+                
 
 
             error[i] = np.mean((z_test - z_pred)**2)
