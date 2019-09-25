@@ -26,6 +26,58 @@ class Resampling:
         return error, bias, variance, r2
 
 
+    def bootstrap(self, model, n_bootstraps = 100, test_size = 0.2):
+        X_train, X_test, z_train, z_test = train_test_split(self.X, self.z, test_size = test_size)
+        sampleSize = X_train.shape[0]
+
+        # mse = np.zeros(n_bootstraps)
+        # variance = np.zeros(n_bootstraps)
+        # r2 = np.zeros(n_bootstraps)
+
+
+        z_pred = np.empty((z_test.shape[0], n_bootstraps))
+        # z_train_preds = np.empty((z_train.shape[0], n_bootstraps))
+
+
+
+        for i in range(n_bootstraps):
+            indices = np.random.randint(0, sampleSize, sampleSize)
+            X_, z_ = X_train[indices], z_train[indices]
+            model.fit(X_, z_)
+
+            z_pred[:,i] = model.predict(X_test)
+            # z_train_preds[:,i] = model.predict(X_)
+
+
+        """
+        error = np.mean( np.mean((y_test - y_pred)**2, axis=1, keepdims=True) )
+        bias = np.mean( (y_test - np.mean(y_pred, axis=1, keepdims=True))**2 )
+        variance = np.mean( np.var(y_pred, axis=1, keepdims=True) )
+        """
+        z_test = z_test.reshape((len(z_test), 1))
+        z_train = z_train.reshape((len(z_train), 1))
+
+
+
+        # error = np.mean( np.mean((z_pred - z_test)**2, axis=1, keepdims=True) )
+        error = np.mean( np.mean((z_pred - z_test)**2, axis=1, keepdims=True))
+        bias = np.mean( (z_test - np.mean(z_pred, axis=1, keepdims=True))**2 )
+        variance = np.mean( np.var(z_pred, axis=1, keepdims=True) )
+
+
+        print('Error:', error)
+        print('Bias^2:', bias)
+        print('Var:', variance)
+        print('{} >= {} + {} = {}'.format(error, bias, variance, bias+variance))
+
+
+
+        return error, bias, variance
+
+
+
+
+
     def k_fold_CV(self, model, k = 5, center = False):
 
         kfold = KFold(n_splits = k, shuffle=True)
@@ -71,7 +123,7 @@ class Resampling:
                 z_pred_train *= z_train_std
                 z_pred_train += z_train_mean
 
-                
+
 
 
             error[i] = np.mean((z_test - z_pred)**2)

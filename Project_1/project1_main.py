@@ -22,9 +22,9 @@ from imageio import imread
 def main():
 
     np.random.seed(10)
-    n = 100
-    deg = 5
-    sigma = 0.5
+    n = 20
+    deg = 3
+    sigma = 0.1
 
     x, y = generate_mesh(n)
     z = frankie_function(x, y, n, sigma)
@@ -32,15 +32,22 @@ def main():
     X = create_design_matrix(x, y, deg)
 
     ### terrain data
-    terrain_data, n = load_terrain('terrain1.tif')
-    z_flat = np.ravel(terrain_data)
-    x, y = generate_mesh(n)
+    # terrain_data, n = load_terrain('terrain1.tif')
+    # z_flat = np.ravel(terrain_data)
+    # x, y = generate_mesh(n)
     ###
+
+    # model = RegressionMethods('ols')
+    # resample = Resampling(X, z_flat)
+    # mse, bias, variance = resample.bootstrap(model, n_bootstraps=10)
+    # print(mse)
+    # print(bias)
+    # print(variance)
 
 
 
     # ols_model_complexity_analysis(x, y, z_flat, save_to_file=True)
-    ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', save_to_file=True)
+    # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', save_to_file=True)
 
 
     # resample = Resampling(X, z_flat)
