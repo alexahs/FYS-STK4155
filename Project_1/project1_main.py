@@ -27,21 +27,22 @@ def main():
     sigma = 0.05
 
     ### frankie data
-    # x, y = generate_mesh(n)
-    # z = frankie_function(x, y, n, sigma)
-    # z_flat = np.ravel(z)
-    # X = create_design_matrix(x, y, deg)
+    x, y = generate_mesh(n)
+    z = frankie_function(x, y, n, sigma)
+    z_flat = np.ravel(z)
+    X = create_design_matrix(x, y, deg)
     ###
 
 
 
 
 
+
     ### terrain data
-    terrain_data, n = load_terrain('SRTM_data_Norway_1.tif')
-    z_flat = np.ravel(terrain_data)
-    x, y = generate_mesh(n)
-    X = create_design_matrix(x, y, deg)
+    # terrain_data, n = load_terrain('SRTM_data_Norway_1.tif')
+    # z_flat = np.ravel(terrain_data)
+    # x, y = generate_mesh(n)
+    # X = create_design_matrix(x, y, deg)
     ###
 
     # plot_mesh(x, y, terrain_data, n)
@@ -49,9 +50,13 @@ def main():
     # show_terrain(terrain_data)
 
 
-    model = RegressionMethods('lasso', alpha=0.001)
+
+
+
+
+    model = RegressionMethods('lasso', alpha=0.0001)
     resample = Resampling(X, z_flat)
-    error, bias, variance, mse_train = resample.k_fold_CV(model)
+    error, bias, variance, mse_train = resample.bootstrap(model)
     print('Error:', error)
     print('Bias^2:', bias)
     print('Var:', variance)

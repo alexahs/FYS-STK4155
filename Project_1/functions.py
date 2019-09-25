@@ -4,6 +4,7 @@ from RegressionMethods import *
 from Resampling import *
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib as mpl
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -20,7 +21,6 @@ def load_terrain(filename):
     if dims[0] != dims[1]:
         terrain = terrain[0:dims[1], :]
         dims = np.shape(terrain)
-    print(dims)
     return terrain*0.001, dims[0]
 
 def show_terrain(terrain_data):
@@ -32,16 +32,6 @@ def show_terrain(terrain_data):
     plt.show()
 
 
-
-
-def frankie_function(x, y, n, sigma = 0, mu = 0):
-    term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
-    term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
-    term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
-    term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
-    return term1 + term2 + term3 + term4 + np.random.normal(mu, sigma, n)
-
-
 def generate_mesh(n, random_pts = 0):
     if random_pts == 0:
         x = np.linspace(0, 1, n)
@@ -50,6 +40,14 @@ def generate_mesh(n, random_pts = 0):
         x = np.random.rand(n)
         y = np.random.rand(n)
     return np.meshgrid(x, y)
+
+
+def frankie_function(x, y, n, sigma = 0, mu = 0):
+    term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
+    term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
+    term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
+    term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
+    return term1 + term2 + term3 + term4 + np.random.normal(mu, sigma, n)
 
 
 def create_design_matrix(x, y, deg):
@@ -79,7 +77,7 @@ def plot_mesh(x, y, z, n):
     surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
                            linewidth=0, antialiased=False)
 
-    ax.set_zlim(-0.10, 1.40)
+    # ax.set_zlim(-0.10, 1.40)
     ax.zaxis.set_major_locator(LinearLocator(10))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
@@ -89,7 +87,7 @@ def plot_mesh(x, y, z, n):
 
 
 
-def ols_model_complexity_analysis(x, y, z, max_deg=10, save_to_file = False):
+def ols_model_complexity_analysis(x, y, z, max_deg=20, n_bootstraps = 50, save_to_file = False):
 
     if save_to_file:
         filename = 'results/' + 'OLS_error_scores'
@@ -109,7 +107,7 @@ def ols_model_complexity_analysis(x, y, z, max_deg=10, save_to_file = False):
         print('degree: ', deg)
         resample = Resampling(X, z)
 
-        mse[i], bias[i], variance[i], mse_train[i] = resample.bootstrap(model)
+        mse[i], bias[i], variance[i], mse_train[i] = resample.bootstrap(model, n_bootstraps)
 
         if save_to_file:
             error_scores = error_scores.append({'degree': degrees[i],
