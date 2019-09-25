@@ -4,26 +4,34 @@ from RegressionMethods import *
 from Resampling import *
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from imageio import imread
+import seaborn as sns
 
 
 def load_terrain(filename):
     terrain = imread('data/' + filename)
     dims = np.shape(terrain)
-    terrain = terrain[0: dims[0] // 2, 0: dims[1] //2 ]
-    new_dims = np.shape(terrain)
-    return terrain, new_dims[0]
+    terrain = terrain[0:dims[0]//2, 0:dims[1]//2]
+    terrain = terrain[0:-1:2, 0:-1:2]
+    dims = np.shape(terrain)
+    if dims[0] != dims[1]:
+        terrain = terrain[0:dims[1], :]
+        dims = np.shape(terrain)
+    print(dims)
+    return terrain*0.001, dims[0]
 
-def show_terrain(filename):
-    terrain = imread('data/' + filename)
+def show_terrain(terrain_data):
     plt.figure()
     plt.title('Terrain')
-    plt.imshow(terrain, cmap='gray')
+    plt.imshow(terrain_data, cmap='gray')
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.show()
+
+
 
 
 def frankie_function(x, y, n, sigma = 0, mu = 0):
@@ -92,7 +100,7 @@ def ols_model_complexity_analysis(x, y, z, max_deg=10, save_to_file = False):
     mse = np.zeros(max_deg)
     bias = np.zeros(max_deg)
     variance = np.zeros(max_deg)
-    r2 = np.zeros(max_deg)
+    # r2 = np.zeros(max_deg)
     mse_train = np.zeros(max_deg)
 
     i = 0
@@ -101,14 +109,14 @@ def ols_model_complexity_analysis(x, y, z, max_deg=10, save_to_file = False):
         print('degree: ', deg)
         resample = Resampling(X, z)
 
-        mse[i], bias[i], variance[i], r2[i], mse_train[i] = resample.k_fold_CV(model)
+        mse[i], bias[i], variance[i], mse_train[i] = resample.bootstrap(model)
 
         if save_to_file:
             error_scores = error_scores.append({'degree': degrees[i],
                                                 'mse': mse[i],
                                                 'bias': bias[i],
                                                 'variance': variance[i],
-                                                'r2': r2[i],
+                                                # 'r2': r2[i],
                                                 'mse_train': mse_train[i]}, ignore_index=True)
         #end if
         i += 1
@@ -120,6 +128,12 @@ def ols_model_complexity_analysis(x, y, z, max_deg=10, save_to_file = False):
     plt.legend()
     plt.xlabel('Model complexity [deg]')
     plt.ylabel('Mean Squared Error')
+    plt.show()
+
+    plt.plot(degrees, mse, label='mse')
+    plt.plot(degrees, bias, label='bias')
+    plt.plot(degrees, variance, label='variance')
+    plt.legend()
     plt.show()
 
 
@@ -137,7 +151,7 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, k = 5, max_deg=10, save
     n_lambdas = 10
     model = RegressionMethods(model_name)
 
-    lambdas = np.logspace(-3, 3, n_lambdas)
+    lambdas = np.logspace(-5, 2, n_lambdas)
     degrees = np.linspace(1, max_deg, max_deg)
     # mse = np.zeros(max_deg)
     # bias = np.zeros(max_deg)
@@ -159,16 +173,16 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, k = 5, max_deg=10, save
         for lamb in lambdas:
             model.set_alpha(lamb)
 
-            mse, bias, variance, r2, mse_train = resample.k_fold_CV(model)
+            mse, bias, variance, mse_train = resample.bootstrap(model)
 
 
             if save_to_file:
                 error_scores = error_scores.append({'degree': deg,
-                                                    'lambda': lamb,
+                                                    'log lambda': np.log10(lamb),
                                                     'mse': mse,
                                                     'bias': bias,
                                                     'variance': variance,
-                                                    'r2': r2,
+                                                    # 'r2': r2,
                                                     'mse_train': mse_train}, ignore_index=True)
             #end if
             j+=1
@@ -182,7 +196,30 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, k = 5, max_deg=10, save
 
 
 
+
     if save_to_file:
         error_scores.to_csv(filename + '.csv')
         print(error_scores)
-        print(error_scores['mse'].min())
+        # print(error_scores['mse'].min())
+
+
+def plot_rigde_lasso_analysis(filename):
+
+
+
+    df = pd.read_csv('results/' + filename)
+
+
+    mse_values = pd.pivot_table(df, values='mse', index=['log lambda'], columns='degree')
+
+    # print(mse_values)
+
+
+
+    # dfl = df.idxmin(axis=0)
+
+    # print(dfl)
+
+
+    sns.heatmap(mse_values, cmap='coolwarm', annot=True)
+    plt.show()
