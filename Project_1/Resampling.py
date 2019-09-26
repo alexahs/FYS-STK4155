@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 class Resampling:
 
     def __init__(self, X, z):
-        self.X = X
-        self.z = z
+        self.X = X.astype('float64')
+        self.z = z.astype('float64')
 
 
     def train_test(self, model, test_size = 0.2):
@@ -26,7 +26,7 @@ class Resampling:
         return error, bias, variance, r2
 
 
-    def bootstrap(self, model, n_bootstraps = 50, test_size = 0.2):
+    def bootstrap(self, model, n_bootstraps = 100, test_size = 0.2):
         X_train, X_test, z_train, z_test = train_test_split(self.X, self.z, test_size = test_size)
         sampleSize = X_train.shape[0]
 
@@ -74,10 +74,16 @@ class Resampling:
 
         testSize = len(self.z) // k
 
-        z_pred = np.empty((testSize, k))
-        z_train_pred = np.empty((len(self.z) - testSize, k))
-        z_train_temp = np.empty((len(self.z) - testSize, k))
+        z_test_pred = np.empty((testSize, k))
+        z_tests = np.empty((testSize, k))
 
+        z_train_pred = np.empty((len(self.z) - testSize, k))
+        z_trains = np.empty((len(self.z) - testSize, k))
+
+        # print('z_test_pred:', z_test_pred.shape)
+        # print('z_tests:', z_tests.shape)
+        # print('z_train_pred:', z_train_pred.shape)
+        # print('z_trains:', z_trains.shape)
 
 
         i = 0
@@ -86,22 +92,23 @@ class Resampling:
             X_test = self.X[test_inds]
             z_train = self.z[train_inds]
             z_test = self.z[test_inds]
-            z_train = z_train.astype('float64')
-            z_test = z_test.astype('float64')
+
 
             model.fit(X_train, z_train)
-            z_pred[:,i] = model.predict(X_test)
+            z_trains[:,i] = z_train
+            z_test_pred[:,i] = model.predict(X_test)
             z_train_pred[:,i] = model.predict(X_train)
 
 
             i += 1
 
-        z_test = z_test.reshape((len(z_test), 1))
 
-        error = np.mean( np.mean((z_pred - z_test)**2, axis=1, keepdims=True))
-        error_train = np.mean( np.mean((z_train_pred - z_train_boot)**2, axis=1, keepdims=True))
-        bias = np.mean( (z_test - np.mean(z_pred, axis=1, keepdims=True))**2 )
-        variance = np.mean( np.var(z_pred, axis=1, keepdims=True) )
+        # z_test_pred = z_test_pred.reshape((testSize, 1))
+
+        error = np.mean( np.mean((z_test_pred - z_tests)**2, axis=1, keepdims=True))
+        error_train = np.mean( np.mean((z_train_pred - z_trains)**2, axis=1, keepdims=True))
+        bias = np.mean( (z_tests - np.mean(z_test_pred, axis=1, keepdims=True))**2 )
+        variance = np.mean( np.var(z_test_pred, axis=1, keepdims=True) )
 
 
         return error, bias, variance, error_train

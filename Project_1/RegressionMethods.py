@@ -30,7 +30,7 @@ class RegressionMethods:
 
 
     def lasso(self):
-        clf = skl.Lasso(alpha = self.alpha, fit_intercept=False, normalize=False).fit(self.X, self.z)
+        clf = skl.Lasso(alpha = self.alpha, fit_intercept=False, normalize=False, max_iter=10000).fit(self.X, self.z)
         self.beta = clf.coef_
 
 

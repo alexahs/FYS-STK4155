@@ -1,6 +1,7 @@
 from RegressionMethods import *
 from Resampling import *
 from functions import *
+from analysis import *
 import pandas as pd
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
@@ -21,10 +22,10 @@ from imageio import imread
 
 def main():
 
-    np.random.seed(10)
-    n = 30
+    np.random.seed(100)
+    n = 20
     deg = 5
-    sigma = 0.05
+    sigma = 0.2
 
     ### frankie data
     x, y = generate_mesh(n)
@@ -32,9 +33,6 @@ def main():
     z_flat = np.ravel(z)
     X = create_design_matrix(x, y, deg)
     ###
-
-
-
 
 
 
@@ -51,25 +49,20 @@ def main():
 
 
 
-
-
-
-    model = RegressionMethods('lasso', alpha=0.0001)
-    resample = Resampling(X, z_flat)
-    error, bias, variance, mse_train = resample.bootstrap(model)
-    print('Error:', error)
-    print('Bias^2:', bias)
-    print('Var:', variance)
-    print('{} >= {} + {} = {}'.format(error, bias, variance, bias+variance))
+    # resample = Resampling(X, z_flat)
+    # error, bias, variance, mse_train = resample.bootstrap(model)
+    # print('Error:', error)
+    # print('Bias^2:', bias)
+    # print('Var:', variance)
+    # print('{} >= {} + {} = {}'.format(error, bias, variance, bias+variance))
 
 
 
 
 
-    # ols_model_complexity_analysis(x, y, z_flat, max_deg = 20, save_to_file=True)
-    # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', save_to_file=True)
+    ols_model_complexity_analysis(x, y, z_flat, max_deg = 10)
+    # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', max_deg=10)
 
-    # plot_rigde_lasso_analysis('ridge_error_scores.csv')
 
     # resample = Resampling(X, z_flat)
     # mse, bias, variance, r2, train_error = resample.k_fold_CV(model)
