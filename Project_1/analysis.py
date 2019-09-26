@@ -12,12 +12,12 @@ import matplotlib.colors as colors
 
 
 
-def ols_model_complexity_analysis(x, y, z, max_deg=20, n_bootstraps = 100):
+def model_degree_analysis(x, y, z, model_name, max_deg=20, n_bootstraps = 100):
 
-    filename = 'results/' + 'OLS_error_scores'
+    filename = 'results/' + 'error_scores_deg_analysis_' + model_name
     error_scores = pd.DataFrame(columns=['degree', 'mse', 'bias', 'variance', 'r2', 'mse_train'])
 
-    model = RegressionMethods('ols')
+    model = RegressionMethods(model_name)
     degrees = np.linspace(1, max_deg, max_deg)
     mse = np.zeros(max_deg)
     bias = np.zeros(max_deg)
@@ -47,13 +47,15 @@ def ols_model_complexity_analysis(x, y, z, max_deg=20, n_bootstraps = 100):
     plt.plot(degrees, mse, label='test set')
     plt.plot(degrees, mse_train, label='training set')
     plt.legend()
-    plt.xlabel('Model complexity [deg]')
+    plt.xlabel('Model complexity [degree]')
     plt.ylabel('Mean Squared Error')
     plt.show()
 
     plt.plot(degrees, mse, label='mse')
     plt.plot(degrees, bias, label='bias')
     plt.plot(degrees, variance, label='variance')
+    plt.xlabel('Model complexity [degree]')
+    plt.ylabel('Mean Squared Error')
     plt.legend()
     plt.show()
 

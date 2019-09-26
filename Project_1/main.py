@@ -60,7 +60,7 @@ def main():
 
 
 
-    ols_model_complexity_analysis(x, y, z_flat, max_deg = 10)
+    model_degree_analysis(x, y, z_flat, 'ridge', max_deg = 10)
     # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', max_deg=10)
 
 
