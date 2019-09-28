@@ -84,3 +84,23 @@ def plot_mesh(x, y, z, n):
     fig.colorbar(surf, shrink=0.5, aspect=5)
 
     plt.show()
+
+
+def confidence_interval_ols(X, z, betas):
+    cov = np.var(z)*np.linalg.pinv(X.T.dot(X))
+
+    std_betas = np.sqrt(np.diag(cov))
+
+    CI = 1.96*std_betas
+
+    print(np.sort(CI))
+    # print(np.var(z))
+
+    plt.xticks(np.arange(0, len(betas), step=1))
+
+    plt.errorbar(range(len(betas)), betas, CI, fmt="b.", capsize=3, label=r'$\beta_j \pm 1.96\dot \sigma$')
+    plt.legend()
+    plt.xlabel(r'index $j$')
+    plt.ylabel(r'$\beta_j$')
+    plt.grid()
+    plt.show()

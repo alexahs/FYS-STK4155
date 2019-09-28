@@ -70,7 +70,7 @@ def model_degree_analysis(x, y, z, model_name, max_deg=20, n_bootstraps = 100):
 
 def ridge_lasso_complexity_analysis(x, y, z, model_name, k = 5, max_deg=10):
 
-    n_lambdas = 10
+    n_lambdas = 15
     model = RegressionMethods(model_name)
 
     lambdas = np.linspace(-10, 2, n_lambdas)
