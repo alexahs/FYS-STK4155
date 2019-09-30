@@ -23,15 +23,20 @@ from imageio import imread
 def main():
 
     np.random.seed(100)
-    n = 20
+    n = 100
     deg = 5
     sigma = 0.2
 
     ### frankie data
+    # x, y = generate_mesh(n)
+    # z = frankie_function(x, y, n, sigma)
+    # z_flat = np.ravel(z)
+    ###
+
+    ### terrain data
+    terrain_data, n = load_terrain('norway1.tif')
+    z_flat = np.ravel(terrain_data)
     x, y = generate_mesh(n)
-    z = frankie_function(x, y, n, sigma)
-    z_flat = np.ravel(z)
-    # X = create_design_matrix(x, y, deg)
     ###
 
     # plot_mesh(x, y, z, n)
@@ -45,39 +50,18 @@ def main():
 
 
 
-    ### terrain data
-    # terrain_data, n = load_terrain('terrain2.tif')
-    # z_flat = np.ravel(terrain_data)
-    # x, y = generate_mesh(n)
-    # X = create_design_matrix(x, y, deg)
-    ###
 
     # plot_mesh(x, y, terrain_data, n)
 
-    # show_terrain(terrain_data)
-
-
-
-    # resample = Resampling(X, z_flat)
-    # error, bias, variance, mse_train = resample.bootstrap(model)
-    # print('Error:', error)
-    # print('Bias^2:', bias)
-    # print('Var:', variance)
-    # print('{} >= {} + {} = {}'.format(error, bias, variance, bias+variance))
+    # show_terrain('SRTM_data_Norway_1.tif')
 
 
 
 
 
-    model_degree_analysis(x, y, z_flat, 'ridge', max_deg = 10, alpha = 10**-4)
-    # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', max_deg=10)
 
-
-    # resample = Resampling(X, z_flat)
-    # mse, bias, variance, r2, train_error = resample.k_fold_CV(model)
-
-
-
+    model_degree_analysis(x, y, z_flat, 'ols', min_deg=6, max_deg = 15, alpha = 10**-10)
+    # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge',min_deg=5, max_deg=14)
 
 
 

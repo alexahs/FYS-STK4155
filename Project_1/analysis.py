@@ -8,25 +8,28 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import seaborn as sns
 from matplotlib.patches import Rectangle
+from tqdm import tqdm
+import time
 plt.style.use('ggplot')
 
 
 
 
 
-def model_degree_analysis(x, y, z, model_name, max_deg=10, n_bootstraps = 100, alpha = 0):
+def model_degree_analysis(x, y, z, model_name, min_deg=1, max_deg=10, n_bootstraps = 100, alpha = 0):
 
     dat_filename = 'results/' + 'error_scores_deg_analysis_' + model_name
     fig_filename = 'figures/' + 'deg_analysis_' + model_name
     error_scores = pd.DataFrame(columns=['degree', 'mse', 'bias', 'variance', 'r2', 'mse_train'])
 
     model = RegressionMethods(model_name, alpha=alpha)
-    degrees = np.linspace(1, max_deg, max_deg)
-    mse = np.zeros(max_deg)
-    bias = np.zeros(max_deg)
-    variance = np.zeros(max_deg)
-    r2 = np.zeros(max_deg)
-    mse_train = np.zeros(max_deg)
+    degrees = np.linspace(min_deg, max_deg, max_deg - min_deg + 1)
+    nDegs = len(degrees)
+    mse = np.zeros(nDegs)
+    bias = np.zeros(nDegs)
+    variance = np.zeros(nDegs)
+    r2 = np.zeros(nDegs)
+    mse_train = np.zeros(nDegs)
 
 
 
@@ -34,9 +37,9 @@ def model_degree_analysis(x, y, z, model_name, max_deg=10, n_bootstraps = 100, a
     min_r2 = 0
     min_deg = 0
     i = 0
-    for deg in degrees:
+    for deg in tqdm(degrees):
         X = create_design_matrix(x, y, int(deg))
-        print('degree: ', deg)
+        # print('degree: ', deg)
         resample = Resampling(X, z)
 
         mse[i], bias[i], variance[i], mse_train[i], r2[i] = resample.bootstrap(model, n_bootstraps)
@@ -88,7 +91,7 @@ def model_degree_analysis(x, y, z, model_name, max_deg=10, n_bootstraps = 100, a
 
 
 
-def ridge_lasso_complexity_analysis(x, y, z, model_name, max_deg=10):
+def ridge_lasso_complexity_analysis(x, y, z, model_name, min_deg=1, max_deg=10):
 
     n_lambdas = 13
     model = RegressionMethods(model_name)
@@ -96,7 +99,7 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, max_deg=10):
 
 
     lambdas = np.linspace(-10, 2, n_lambdas)
-    degrees = np.linspace(1, max_deg, max_deg)
+    degrees = np.linspace(min_deg, max_deg, max_deg - min_deg + 1)
 
     dat_filename = 'results/' + 'error_scores_' + model_name
     fig_filename = 'figures/' + 'min_mse_meatmap_' + model_name
@@ -109,12 +112,12 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, max_deg=10):
     min_r2 = 0
 
     i = 0
-    for deg in degrees:
+    for deg in tqdm(degrees):
         j = 0
         X = create_design_matrix(x, y, int(deg))
-        print('degree: ', deg)
+        # print('degree: ', deg)
         resample = Resampling(X, z)
-        for lamb in lambdas:
+        for lamb in tqdm(lambdas):
             model.set_alpha(10**lamb)
 
             mse, bias, variance, mse_train, r2 = resample.bootstrap(model, n_bootstraps=10)

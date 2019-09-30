@@ -13,14 +13,18 @@ import seaborn as sns
 
 
 def load_terrain(filename):
+    slice = 2
     terrain = imread('data/' + filename)
-    dims = np.shape(terrain)
-    # terrain = terrain[0:dims[0]//2, 0:dims[1]//2]
-    # terrain = terrain[0:-1:2, 0:-1:2]
     dims = np.shape(terrain)
     if dims[0] != dims[1]:
         terrain = terrain[0:dims[1], :]
         dims = np.shape(terrain)
+    if dims[0] < 450:
+        slice = 4
+    terrain = terrain[0:dims[0]//2, 0:dims[1]//2]
+    terrain = terrain[0:-1:slice, 0:-1:slice]
+    dims = np.shape(terrain)
+    print(filename, 'loaded.', dims[0],'x',dims[1])
     return terrain*0.001, dims[0]
 
 def show_terrain(terrain_data):
