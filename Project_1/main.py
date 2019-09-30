@@ -69,8 +69,8 @@ def main():
 
 
 
-    # model_degree_analysis(x, y, z_flat, 'ols', max_deg = 10)
-    ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', max_deg=10)
+    model_degree_analysis(x, y, z_flat, 'ridge', max_deg = 10, alpha = 10**-4)
+    # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge', max_deg=10)
 
 
     # resample = Resampling(X, z_flat)

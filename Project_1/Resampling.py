@@ -35,7 +35,7 @@ class Resampling:
         z_train_pred = np.empty((z_train.shape[0], n_bootstraps))
         z_train_boot = np.empty((z_train.shape[0], n_bootstraps))
         # betas = np.empty((n_betas, n_bootstraps))
-
+        r2 = np.empty(n_bootstraps)
 
 
         for i in range(n_bootstraps):
@@ -48,6 +48,7 @@ class Resampling:
             z_pred[:,i] = model.predict(X_test)
             z_train_pred[:,i] = model.predict(X_)
             # betas[:,i] = model.beta
+            r2[i] = r2_score(z_pred[:,i], z_test)
 
 
         z_test = z_test.reshape((len(z_test), 1))
@@ -58,9 +59,9 @@ class Resampling:
         variance = np.mean( np.var(z_pred, axis=1, keepdims=True) )
 
 
-        r2 = 0
-        for i in range(n_bootstraps):
-            r2 += r2_score(z_pred[:,i], z_test)
+
+        # for i in range(n_bootstraps):
+        #     r2 += r2_score(z_pred[:,i], z_test)
 
         # beta_variance = np.empty(n_betas)
         # for i in range(n_betas):

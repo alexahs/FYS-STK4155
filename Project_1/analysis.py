@@ -14,13 +14,13 @@ plt.style.use('ggplot')
 
 
 
-def model_degree_analysis(x, y, z, model_name, max_deg=10, n_bootstraps = 100):
+def model_degree_analysis(x, y, z, model_name, max_deg=10, n_bootstraps = 100, alpha = 0):
 
     dat_filename = 'results/' + 'error_scores_deg_analysis_' + model_name
     fig_filename = 'figures/' + 'deg_analysis_' + model_name
     error_scores = pd.DataFrame(columns=['degree', 'mse', 'bias', 'variance', 'r2', 'mse_train'])
 
-    model = RegressionMethods(model_name)
+    model = RegressionMethods(model_name, alpha=alpha)
     degrees = np.linspace(1, max_deg, max_deg)
     mse = np.zeros(max_deg)
     bias = np.zeros(max_deg)
@@ -56,12 +56,8 @@ def model_degree_analysis(x, y, z, model_name, max_deg=10, n_bootstraps = 100):
         i += 1
     #end for
 
-    # ax.scatter(min_degree, min_lambda, min_mse, color='r',
-    #                     label='Min. MSE = %0.2f, ' %min_mse +
-    #                      r'$\log_{10}(\lambda)$ = %0.2f, ' %min_lambda +
-    #                      'degree = %d' %min_degree)
 
-    ID = '002'
+    ID = '006'
 
     plt.plot(degrees, mse, label='test set')
     plt.plot(degrees, mse_train, label='training set')
@@ -92,27 +88,25 @@ def model_degree_analysis(x, y, z, model_name, max_deg=10, n_bootstraps = 100):
 
 
 
-def ridge_lasso_complexity_analysis(x, y, z, model_name, k = 5, max_deg=10):
+def ridge_lasso_complexity_analysis(x, y, z, model_name, max_deg=10):
 
     n_lambdas = 13
     model = RegressionMethods(model_name)
 
+
+
     lambdas = np.linspace(-10, 2, n_lambdas)
     degrees = np.linspace(1, max_deg, max_deg)
-    d, l = np.meshgrid(degrees, lambdas)
 
     dat_filename = 'results/' + 'error_scores_' + model_name
-    fig_filename = 'figures/' + 'min_mse_2d_plot_' + model_name
+    fig_filename = 'figures/' + 'min_mse_meatmap_' + model_name
     error_scores = pd.DataFrame(columns=['degree', 'lambda', 'mse', 'bias', 'variance', 'mse_train'])
-
 
 
     min_mse = 1e100
     min_lambda = 0
     min_degree = 0
     min_r2 = 0
-    min_idx_i = 0
-    min_idx_j = 0
 
     i = 0
     for deg in degrees:
@@ -138,8 +132,6 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, k = 5, max_deg=10):
                 min_lambda = lamb
                 min_degree = deg
                 min_r2 = r2
-                min_idx_i = i
-                min_idx_j = j
 
 
             j+=1
@@ -148,65 +140,30 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, k = 5, max_deg=10):
     #end for degrees
 
     print('min mse:', min_mse)
-    print('min r2:', )
+    print('min r2:', min_r2)
     print('degree:', min_degree)
     print('lambda:', min_lambda)
 
 
     error_scores.to_csv(dat_filename + '.csv')
-    # print(error_scores)
 
 
     mse_table = pd.pivot_table(error_scores, values='mse', index=['degree'], columns='log lambda')
-    # mse_values = mse_table.values
-    # mse_values = mse_values.T
+    idx_i = np.where(mse_table == min_mse)[0]
+    idx_j = np.where(mse_table == min_mse)[1]
 
-    # min_mse_spot = np.chararray((len(degrees), len(lambdas)))
-    #
-    # for i in range(len(degrees)):
-    #     for j in range(len(lambdas)):
-    #             # min_mse_spot[i, j] = str(i+j)
-    #         if i != min_idx_i:
-    #             if j != min_idx_j:
-    #                 min_mse_spot[i, j] = ' '
-    # #
-    # #
-    # min_mse_spot[min_idx_i, min_idx_j] = ('%0.3f') %min_mse
-    # print(mse_table.shape)
-    # print(min_mse_spot.shape)
-
-
-    # print(mse_table)
-    # print(mse_values)
-
-    """
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(min_degree, min_lambda, min_mse, color='r',
-                        label='Min. MSE = %0.3f, ' %min_mse +
-                         r'$\log_{10}(\lambda)$ = %0.2f, ' %min_lambda +
-                         'degree = %d' %min_degree)
-    surface = ax.plot_surface(d, l, mse_values,
-        cmap=mpl.cm.coolwarm, alpha=0.5)
-
-    ax.set_xlabel("Complexity")
-    ax.set_ylabel(r"$\log_{10}(\lambda)$")
-    ax.set_zlabel("Mean Squared Error")
-
-    ax.legend()
-    ID = '003'
-    plt.savefig(fig_filename + '_' + ID + '.pdf')
-
-    plt.show()
-    """
 
     fig = plt.figure()
+    ax = sns.heatmap(mse_table, annot=True, fmt='.2g', cbar=True, linewidths=1, linecolor='white',
+                            cbar_kws={'label': 'Mean Squared Error'})
+    ax.add_patch(Rectangle((idx_j, idx_i), 1, 1, fill=False, edgecolor='red', lw=3))
 
-    ax = sns.heatmap(mse_table, annot=True, fmt='.3f')
-    # ax.set_xticks(range(1, 11))
     ax.set_xlabel(r"$\log_{10}(\lambda)$")
     ax.set_ylabel("Complexity")
+    ax.set_ylim(len(degrees), 0)
+    # plt.savefig('test.pdf')
     plt.show()
+
 
 
 def confidence_interval_ols(X, z, betas):
@@ -227,3 +184,28 @@ def confidence_interval_ols(X, z, betas):
     plt.ylabel(r'$\beta_j$')
     plt.grid()
     plt.show()
+
+
+
+"""
+mse_values = mse_table.values
+mse_values = mse_values.T
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(min_degree, min_lambda, min_mse, color='r',
+                    label='Min. MSE = %0.3f, ' %min_mse +
+                     r'$\log_{10}(\lambda)$ = %0.2f, ' %min_lambda +
+                     'degree = %d' %min_degree)
+surface = ax.plot_surface(d, l, mse_values,
+    cmap=mpl.cm.coolwarm, alpha=0.5)
+
+ax.set_xlabel("Complexity")
+ax.set_ylabel(r"$\log_{10}(\lambda)$")
+ax.set_zlabel("Mean Squared Error")
+
+ax.legend()
+ID = '003'
+plt.savefig(fig_filename + '_' + ID + '.pdf')
+
+plt.show()
+"""
