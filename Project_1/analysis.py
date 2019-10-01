@@ -16,7 +16,7 @@ plt.style.use('ggplot')
 
 
 
-def model_degree_analysis(x, y, z, model_name, min_deg=1, max_deg=10, n_bootstraps = 100, alpha = 0):
+def model_degree_analysis(x, y, z, model_name, min_deg=1, max_deg=10, n_bootstraps = 100, alpha = 0, ID = '000'):
 
     dat_filename = 'results/' + 'error_scores_deg_analysis_' + model_name
     fig_filename = 'figures/' + 'deg_analysis_' + model_name
@@ -60,8 +60,6 @@ def model_degree_analysis(x, y, z, model_name, min_deg=1, max_deg=10, n_bootstra
     #end for
 
 
-    ID = '006'
-
     plt.plot(degrees, mse, label='test set')
     plt.plot(degrees, mse_train, label='training set')
     # plt.plot(min_deg, min_mse, 'ro', label='Min. MSE = %0.3f, ' %min_mse +
@@ -91,7 +89,7 @@ def model_degree_analysis(x, y, z, model_name, min_deg=1, max_deg=10, n_bootstra
 
 
 
-def ridge_lasso_complexity_analysis(x, y, z, model_name, min_deg=1, max_deg=10):
+def ridge_lasso_complexity_analysis(x, y, z, model_name, min_deg=1, max_deg=10, ID = '000'):
 
     n_lambdas = 13
     model = RegressionMethods(model_name)
@@ -103,7 +101,7 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, min_deg=1, max_deg=10):
 
     dat_filename = 'results/' + 'error_scores_' + model_name
     fig_filename = 'figures/' + 'min_mse_meatmap_' + model_name
-    error_scores = pd.DataFrame(columns=['degree', 'lambda', 'mse', 'bias', 'variance', 'mse_train'])
+    error_scores = pd.DataFrame(columns=['degree', 'log lambda', 'mse', 'bias', 'variance', 'r2', 'mse_train'])
 
 
     min_mse = 1e100
@@ -165,6 +163,28 @@ def ridge_lasso_complexity_analysis(x, y, z, model_name, min_deg=1, max_deg=10):
     ax.set_ylabel("Complexity")
     ax.set_ylim(len(degrees), 0)
     # plt.savefig('test.pdf')
+    plt.show()
+
+
+
+
+
+def confidence_intervals(x, y, z_flat, model, degree, alpha = 0, noise = 0):
+    X = create_design_matrix(x, y, degree)
+    resample = Resampling(X, z_flat)
+    betas, variance = resample.bootstrap(model, get_beta_var=True)
+    # print(beta)
+    # print(variance)
+
+    CI = 1.96*np.sqrt(variance)
+
+    plt.xticks(np.arange(0, len(betas), step=1))
+
+    plt.errorbar(range(len(betas)), betas, CI, fmt="b.", capsize=3, label=r'$\beta_j \pm 1.96\dot \sigma$')
+    plt.legend()
+    plt.xlabel(r'index $j$')
+    plt.ylabel(r'$\beta_j$')
+    plt.grid()
     plt.show()
 
 

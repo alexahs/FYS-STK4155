@@ -28,7 +28,7 @@ class Resampling:
         return error, bias, variance, r2
 
 
-    def bootstrap(self, model, n_bootstraps = 100, test_size = 0.2):
+    def bootstrap(self, model, n_bootstraps = 100, test_size = 0.2, get_beta_var = False):
         X_train, X_test, z_train, z_test = train_test_split(self.X, self.z, test_size = test_size)
         sampleSize = X_train.shape[0]
         n_betas = np.shape(self.X)[1]
@@ -36,7 +36,7 @@ class Resampling:
         z_pred = np.empty((z_test.shape[0], n_bootstraps))
         z_train_pred = np.empty((z_train.shape[0], n_bootstraps))
         z_train_boot = np.empty((z_train.shape[0], n_bootstraps))
-        # betas = np.empty((n_betas, n_bootstraps))
+        betas = np.empty((n_betas, n_bootstraps))
         r2 = np.empty(n_bootstraps)
 
 
@@ -49,7 +49,7 @@ class Resampling:
 
             z_pred[:,i] = model.predict(X_test)
             z_train_pred[:,i] = model.predict(X_)
-            # betas[:,i] = model.beta
+            betas[:,i] = model.beta
             r2[i] = r2_score(z_pred[:,i], z_test)
 
 
@@ -61,23 +61,24 @@ class Resampling:
         variance = np.mean( np.var(z_pred, axis=1, keepdims=True) )
 
 
+        beta_variance = np.var(betas, axis=1)
+        betas = np.mean(betas, axis=1)
+        # print(beta_variance)
 
-        # for i in range(n_bootstraps):
-        #     r2 += r2_score(z_pred[:,i], z_test)
+        if get_beta_var:
+            return betas, beta_variance
+        else:
+            return error, bias, variance, error_train, np.mean(r2)
 
-        # beta_variance = np.empty(n_betas)
-        # for i in range(n_betas):
-        #     print(betas[i,:])
-        #     beta_variance[i] = np.mean(np.var(betas[i,:]))
-
-
-        return error, bias, variance, error_train, np.mean(r2)
 
 
 
 
 
     def k_fold_CV(self, model, k = 5, center = False):
+        """
+        not working
+        """
 
         kfold = KFold(n_splits = k, shuffle=True)
 

@@ -18,9 +18,9 @@ def load_terrain(filename):
     dims = np.shape(terrain)
     if dims[0] != dims[1]:
         terrain = terrain[0:dims[1], :]
-        dims = np.shape(terrain)
-    if dims[0] < 450:
-        slice = 4
+        dims = terrain.shape
+    # if dims[0] < 450:
+    #     slice = 4
     terrain = terrain[0:dims[0]//2, 0:dims[1]//2]
     terrain = terrain[0:-1:slice, 0:-1:slice]
     dims = np.shape(terrain)
@@ -29,6 +29,7 @@ def load_terrain(filename):
 
 def show_terrain(terrain_data):
     plt.figure()
+    terrain1 = imread(terrain_data)
     plt.title('Terrain')
     plt.imshow(terrain_data, cmap='gray')
     plt.xlabel('X')
@@ -78,7 +79,7 @@ def plot_mesh(x, y, z, n):
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm,
+    surf = ax.plot_surface(x, y, z, cmap=cm.terrain,
                            linewidth=0, antialiased=False)
 
     # ax.set_zlim(-0.10, 1.40)
@@ -86,5 +87,32 @@ def plot_mesh(x, y, z, n):
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
     fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    plt.show()
+
+
+def plot_model(x, y, z, model, deg):
+    X = create_design_matrix(x, y, deg)
+    z_flat = np.ravel(z)
+    model.fit(X, z_flat)
+    z_pred = model.predict(X).reshape(len(x), len(y))
+
+    # z_pred = z_pred[0:-1:10]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    surface = ax.plot_surface(x, y, z_pred,
+        cmap=cm.terrain, alpha=0.9)
+
+    # surface2 = ax.plot_surface(x, y, z, cmap=cm.binary, alpha=0.5)
+
+    plot_mesh(x, y, z, len(x))
+
+    x = x[0:-1:10]
+    y = y[0:-1:10]
+    z = z[0:-1:10]
+    # ax.scatter(x, y, z, alpha=0.5, c='#808080',  s=0.5)
+
+    # ax.legend()
 
     plt.show()

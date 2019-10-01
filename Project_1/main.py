@@ -23,7 +23,7 @@ from imageio import imread
 def main():
 
     np.random.seed(100)
-    n = 100
+    n = 20
     deg = 5
     sigma = 0.2
 
@@ -37,11 +37,13 @@ def main():
     terrain_data, n = load_terrain('norway1.tif')
     z_flat = np.ravel(terrain_data)
     x, y = generate_mesh(n)
+    # X = create_design_matrix(x, y, 15)
     ###
 
-    # plot_mesh(x, y, z, n)
+    # plot_mesh(x, y, z_flat, n)
 
     # model = RegressionMethods('ols')
+    # confidence_intervals(x, y, z_flat, model, 5, noise = sigma)
     # model.fit(X, z_flat)
     # model.predict(X)
     # betas = model.beta
@@ -53,15 +55,14 @@ def main():
 
     # plot_mesh(x, y, terrain_data, n)
 
-    # show_terrain('SRTM_data_Norway_1.tif')
+    # show_terrain('norway1.tif')
 
 
+    model = RegressionMethods('ols', alpha=1e-4)
 
-
-
-
-    model_degree_analysis(x, y, z_flat, 'ols', min_deg=6, max_deg = 15, alpha = 10**-10)
-    # ridge_lasso_complexity_analysis(x, y, z_flat, 'ridge',min_deg=5, max_deg=14)
+    plot_model(x, y, terrain_data, model, deg=9)
+    # model_degree_analysis(x, y, z_flat, 'lasso', min_deg=1, max_deg = 10, alpha = 10**-9)
+    # ridge_lasso_complexity_analysis(x, y, z_flat, 'lasso',min_deg=1, max_deg=10)
 
 
 
