@@ -36,6 +36,8 @@
 *.dat
 *.txt
 *.csv
+*.npy
+
 
 # Misc. files
 *.pro
@@ -46,9 +48,13 @@
 old*
 __pycache__
 homework
+results
+data
+figures
+
 
 # Images
 *.png
 *.jpg
 *.jpeg
-*.pdf
+*.tif
