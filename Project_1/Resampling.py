@@ -2,24 +2,41 @@ import numpy as np
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 import time
 
 
 class Resampling:
-
+    """
+    Class for performing a train/test split and bootstrap resampling.
+    Is initialized with the whole data set, splitting in training and testing
+    data is performed by the methods.
+    """
     def __init__(self, X, z):
         self.X = X.astype('float64')
         self.z = z.astype('float64')
 
 
     def train_test(self, model, test_size = 0.2):
+        """
+        Performs a simple train/test split and trains a model on the train data
+        and returns the errors of the predictions on the test data.
 
+        Inputs:
+        -model, instanciated model
+        -test_size, how much of the data to be used in testing
+        """
+
+
+        #split the data in training and test
         X_train, X_test, z_train, z_test = train_test_split(self.X, self.z, test_size = test_size)
 
+        #fit the model on the train data
         model.fit(X_train, z_train)
+
+        #predict on the test data
         z_pred = model.predict(X_test)
 
+        #calculate errors
         error = np.mean((z_test - z_pred)**2)
         bias = np.mean((z_test - np.mean(z_pred))**2)
         variance = np.var(z_pred)
@@ -29,10 +46,23 @@ class Resampling:
 
 
     def bootstrap(self, model, n_bootstraps = 100, test_size = 0.2, get_beta_var = False):
+        """
+        Performs bootstrap resampling and returns the error scores of both training and
+        test data. Can also return the beta-parameters with its variance if specified.
+
+        Inputs:
+        -model, instanciated model
+        -n_bootstraps, how many bootstrap resamplings to perform
+        -test_size, how much of the data to be used in testing
+        -get_beta_var, whether to return only beta values and their variance
+        """
+
+        #split data in training and testing
         X_train, X_test, z_train, z_test = train_test_split(self.X, self.z, test_size = test_size)
         sampleSize = X_train.shape[0]
         n_betas = np.shape(self.X)[1]
 
+        #setup arrays for storing prediction values
         z_pred = np.empty((z_test.shape[0], n_bootstraps))
         z_train_pred = np.empty((z_train.shape[0], n_bootstraps))
         z_train_boot = np.empty((z_train.shape[0], n_bootstraps))
@@ -40,13 +70,18 @@ class Resampling:
         r2 = np.empty(n_bootstraps)
 
 
+        #perform the resamplings
         for i in range(n_bootstraps):
+
+            #pick random values in the training data and fit the model to it
             indices = np.random.randint(0, sampleSize, sampleSize)
             X_, z_ = X_train[indices], z_train[indices]
             model.fit(X_, z_)
 
+            #save z-values of the training set
             z_train_boot[:,i] = z_
 
+            #predict on the same test data each time
             z_pred[:,i] = model.predict(X_test)
             z_train_pred[:,i] = model.predict(X_)
             betas[:,i] = model.beta
@@ -55,6 +90,7 @@ class Resampling:
 
         z_test = z_test.reshape((len(z_test), 1))
 
+        #calculate mean error scores
         error = np.mean( np.mean((z_pred - z_test)**2, axis=1, keepdims=True))
         error_train = np.mean( np.mean((z_train_pred - z_train_boot)**2, axis=1, keepdims=True))
         bias = np.mean( (z_test - np.mean(z_pred, axis=1, keepdims=True))**2 )
@@ -63,65 +99,9 @@ class Resampling:
 
         beta_variance = np.var(betas, axis=1)
         betas = np.mean(betas, axis=1)
-        # print(beta_variance)
+
 
         if get_beta_var:
             return betas, beta_variance
         else:
             return error, bias, variance, error_train, np.mean(r2)
-
-
-
-
-
-
-    def k_fold_CV(self, model, k = 5, center = False):
-        """
-        not working
-        """
-
-        kfold = KFold(n_splits = k, shuffle=True)
-
-
-        testSize = len(self.z) // k
-
-        z_test_pred = np.empty((testSize, k))
-        z_tests = np.empty((testSize, k))
-
-        z_train_pred = np.empty((len(self.z) - testSize, k))
-        z_trains = np.empty((len(self.z) - testSize, k))
-
-        # print('z_test_pred:', z_test_pred.shape)
-        # print('z_tests:', z_tests.shape)
-        # print('z_train_pred:', z_train_pred.shape)
-        # print('z_trains:', z_trains.shape)
-
-
-        i = 0
-        for train_inds, test_inds in kfold.split(self.X):
-            X_train = self.X[train_inds]
-            X_test = self.X[test_inds]
-            z_train = self.z[train_inds]
-            z_test = self.z[test_inds]
-
-
-            model.fit(X_train, z_train)
-            z_trains[:,i] = z_train
-            z_test_pred[:,i] = model.predict(X_test)
-            z_train_pred[:,i] = model.predict(X_train)
-
-
-            i += 1
-
-
-        # z_test_pred = z_test_pred.reshape((testSize, 1))
-
-        error = np.mean( np.mean((z_test_pred - z_tests)**2, axis=1, keepdims=True))
-        error_train = np.mean( np.mean((z_train_pred - z_trains)**2, axis=1, keepdims=True))
-        bias = np.mean( (z_tests - np.mean(z_test_pred, axis=1, keepdims=True))**2 )
-        variance = np.mean( np.var(z_test_pred, axis=1, keepdims=True) )
-
-
-        return error, bias, variance, error_train
-
-# if __name__ == '__main__':

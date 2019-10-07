@@ -15,13 +15,10 @@ from imageio import imread
 
 
 
-
-
-
-
-
 def main():
-
+    """
+    Main function for performing the analysis of the regression methods
+    """
     np.random.seed(100)
     n = 20
     deg = 5
@@ -34,37 +31,15 @@ def main():
     ###
 
     ### terrain data
-    terrain_data, n = load_terrain('norway1.tif')
-    z_flat = np.ravel(terrain_data)
-    x, y = generate_mesh(n)
-    # X = create_design_matrix(x, y, 15)
+    # terrain_data, n = load_terrain('norway1.tif')
+    # z_flat = np.ravel(terrain_data)
+    # x, y = generate_mesh(n)
     ###
 
-    # plot_mesh(x, y, z_flat, n)
 
-    # model = RegressionMethods('ols')
-    # confidence_intervals(x, y, z_flat, model, 5, noise = sigma)
-    # model.fit(X, z_flat)
-    # model.predict(X)
-    # betas = model.beta
-    #
-    # confidence_interval_ols(X, z, betas)
-
-
-
-
-    # plot_mesh(x, y, terrain_data, n)
-
-    # show_terrain('norway1.tif')
-
-
-    model = RegressionMethods('ols', alpha=1e-4)
-
-    plot_model(x, y, terrain_data, model, deg=9)
-    # model_degree_analysis(x, y, z_flat, 'lasso', min_deg=1, max_deg = 10, alpha = 10**-9)
+    # plot_model(x, y, terrain_data, model, deg=10)
+    # model_degree_analysis(x, y, z_flat, 'ols', min_deg=1, max_deg = 10, alpha = 10**-10)
     # ridge_lasso_complexity_analysis(x, y, z_flat, 'lasso',min_deg=1, max_deg=10)
-
-
 
 if __name__ == '__main__':
     main()
