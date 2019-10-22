@@ -13,7 +13,8 @@ class LogisticRegression:
         return term/(1 + term)
 
 
-    def SGD(self, n_epochs=50, size_minibatch=10):
+
+    def SGD(self, n_epochs=1000, size_minibatch=10):
 
         n = len(self.X[0])
 
@@ -21,7 +22,7 @@ class LogisticRegression:
 
         theta = np.random.randn(n)
 
-        t0 = 1.0
+        t0 = 1
         t1 = 10
         learning_rate = lambda t: t0/(t + t1)
 
@@ -38,11 +39,15 @@ class LogisticRegression:
         self.theta = theta
 
 
-    def fit(self, X, y):
+    def fit(self, X, y, n_epochs=10, size_minibatch=10):
         self.X = X
         self.y = y
-        self.SGD()
+        self.SGD(n_epochs, size_minibatch)
 
 
-    def predict(self, X):
-        return X @ self.theta
+    def predict(self, X, confidence=False):
+        z = X @ self.theta
+        if confidence:
+            return z
+        else:
+            return (z > 0).astype(np.int)
