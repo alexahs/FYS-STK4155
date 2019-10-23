@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from sklearn import datasets, linear_model
 from sklearn.metrics import accuracy_score
 from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from LogisticRegression import *
 
@@ -16,12 +18,6 @@ def load_CC_data(filename):
 
     X = df.loc[:, df.columns != 'defaultPaymentNextMonth'].values
     y = df.loc[:, df.columns == 'defaultPaymentNextMonth'].values
-
-
-    print(df.columns)
-
-    # print(df.loc[:, df.columns == 'LIMIT_BAL'].values)
-
 
 
     outlier_gender1 = np.where(X[:,1] < 1)[0]
@@ -44,53 +40,47 @@ def load_CC_data(filename):
     outlier_rows = np.unique(inds)
 
     X = np.delete(X, outlier_rows, axis=0)
+    y = np.delete(y, outlier_rows, axis=0)
 
-    # print(X[:, 4])
-    # plt.hist(X[:, 4])
-    # plt.show()
 
     onehotencoder = OneHotEncoder(categories="auto")
+    preprocessor = ColumnTransformer(
+            remainder="passthrough",
+            transformers=[
+                ('onehot', onehotencoder, [1, 2, 3])])
+
+
+    X = preprocessor.fit_transform(X)
+
+    # y = onehotencoder.fit_transform(y)
+
+
+    return X, np.ravel(y)
+
+
+def scale_data_split(X, y, test_size = 0.2, which_dataset = 'creditcard'):
+
+
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+
     sc = StandardScaler()
-    scale_inds = np.concatenate((np.array([0, 4]), np.array(range(11, 23))))
-    onehot_inds = [1, 2, 3]
-
-    X = ColumnTransformer([("StandardScaler", sc, scale_inds),],
-                            remainder="passthrough").fit_transform(X)
-
-
-    print(X.shape)
-
-    X = ColumnTransformer([("", onehotencoder, [1]),],
-                            remainder="passthrough").fit_transform(X)
+    scaler = ColumnTransformer(
+            remainder="passthrough",
+            transformers=[
+                ('standardscaler', sc, list(range(9, X_train.shape[1])))])
 
 
-    # print(X[:, 4])
-    # plt.hist(X[:, 4])
-    # plt.show()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
-    # X = ColumnTransformer([("onehot", onehotencoder, [1, 2, 3]),],
-    #                          remainder="passthrough").fit_transform(X)
-
-
-
-    # print(X[:, 9])
-    # plt.plot(X[:, 9])
-    # plt.show()
-
-    print(X.shape)
-
-    for i in range(X.shape[1]):
-        plt.hist(X[:, i], label=str(i))
-        plt.legend()
-        plt.show()
-
-    return X, y
-
-
-
-
+    return X_train_scaled, X_test_scaled, y_train, y_test
 
 
 if __name__ == '__main__':
-    filename = 'data/default_of_credit_card_clients.xls'
-    X, y = load_CC_data(filename)
+    # filename = 'data/default_of_credit_card_clients.xls'
+    # X, y = load_CC_data(filename)
+
+
+
+    pass
